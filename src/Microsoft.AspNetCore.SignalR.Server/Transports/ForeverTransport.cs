@@ -294,13 +294,13 @@ namespace Microsoft.AspNetCore.SignalR.Transports
             return Send(response).Then(() => TaskAsyncHelper.True);
         }
 
-        private static Task PerformSend(object state)
+        private static async Task PerformSend(object state)
         {
             var context = (ForeverTransportContext)state;
 
             if (!context.Transport.IsAlive)
             {
-                return TaskAsyncHelper.Empty;
+                return;
             }
 
             context.Transport.Context.Response.ContentType = JsonUtility.JsonMimeType;
@@ -310,10 +310,8 @@ namespace Microsoft.AspNetCore.SignalR.Transports
                 context.Transport.JsonSerializer.Serialize(context.State, writer);
                 writer.Flush();
 
-                context.Transport.Context.Response.Write(writer.Buffer);
+                await context.Transport.Context.Response.Write(writer.Buffer);
             }
-
-            return TaskAsyncHelper.Empty;
         }
 
         private class ForeverTransportContext

@@ -7,14 +7,14 @@ namespace Microsoft.AspNetCore.SignalR
 {
     internal static class ResponseExtensions
     {
-        public static void Write(this HttpResponse response, ArraySegment<byte> data)
+        public static Task Write(this HttpResponse response, ArraySegment<byte> data)
         {
-            response.Body.Write(data.Array, data.Offset, data.Count);
+            return response.Body.WriteAsync(data.Array, data.Offset, data.Count, response.HttpContext.RequestAborted);
         }
 
         public static Task Flush(this HttpResponse response)
         {
-            return response.Body.FlushAsync();
+            return response.Body.FlushAsync(response.HttpContext.RequestAborted);
         }
 
         /// <summary>
@@ -25,12 +25,12 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="response"></param>
         /// <param name="data"></param>
         /// <returns></returns>
-        public static Task End(this HttpResponse response, string data)
+        public static async Task End(this HttpResponse response, string data)
         {
             var bytes = Encoding.UTF8.GetBytes(data);
             response.ContentLength = bytes.Length;
-            response.Body.Write(bytes, 0, bytes.Length);
-            return response.Body.FlushAsync();
+            await response.Body.WriteAsync(bytes, 0, bytes.Length, response.HttpContext.RequestAborted);
+            await response.Body.FlushAsync();
         }
     }
 }

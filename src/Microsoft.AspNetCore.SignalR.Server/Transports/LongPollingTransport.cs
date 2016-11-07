@@ -234,27 +234,27 @@ namespace Microsoft.AspNetCore.SignalR.Transports
             return transport.Context.Response.Flush();
         }
 
-        private static Task PerformKeepAlive(object state)
+        private static async Task PerformKeepAlive(object state)
         {
             var transport = (LongPollingTransport)state;
 
             if (!transport.IsAlive)
             {
-                return TaskAsyncHelper.Empty;
+                return;
             }
 
-            transport.Context.Response.Write(_keepAlive);
+            await transport.Context.Response.Write(_keepAlive);
 
-            return transport.Context.Response.Flush();
+            await transport.Context.Response.Flush();
         }
 
-        private static Task PerformPartialSend(object state)
+        private static async Task PerformPartialSend(object state)
         {
             var context = (LongPollingTransportContext)state;
 
             if (!context.Transport.IsAlive)
             {
-                return TaskAsyncHelper.Empty;
+                return;
             }
 
             using (var writer = new BinaryMemoryPoolTextWriter(context.Transport.Pool))
@@ -274,10 +274,10 @@ namespace Microsoft.AspNetCore.SignalR.Transports
 
                 writer.Flush();
 
-                context.Transport.Context.Response.Write(writer.Buffer);
+                await context.Transport.Context.Response.Write(writer.Buffer);
             }
 
-            return context.Transport.Context.Response.Flush();
+            await context.Transport.Context.Response.Flush();
         }
 
         private static Task PerformCompleteSend(object state)

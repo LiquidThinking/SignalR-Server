@@ -66,16 +66,16 @@ namespace Microsoft.AspNetCore.SignalR.Transports
                        .Then(s => WriteInit(s), this);
         }
 
-        private static Task PerformKeepAlive(object state)
+        private static async Task PerformKeepAlive(object state)
         {
             var transport = (ServerSentEventsTransport)state;
 
-            transport.Context.Response.Write(new ArraySegment<byte>(_keepAlive));
+            await transport.Context.Response.Write(new ArraySegment<byte>(_keepAlive));
 
-            return transport.Context.Response.Flush();
+            await transport.Context.Response.Flush();
         }
 
-        private static Task PerformSend(object state)
+        private static async Task PerformSend(object state)
         {
             var context = (SendContext)state;
 
@@ -87,13 +87,13 @@ namespace Microsoft.AspNetCore.SignalR.Transports
                 writer.WriteLine();
                 writer.Flush();
 
-                context.Transport.Context.Response.Write(writer.Buffer);
+                await context.Transport.Context.Response.Write(writer.Buffer);
             }
 
-            return context.Transport.Context.Response.Flush();
+            await context.Transport.Context.Response.Flush();
         }
 
-        private static Task WriteInit(ServerSentEventsTransport transport)
+        private static async Task WriteInit(ServerSentEventsTransport transport)
         {
             // Disable request compression
             var buffering = transport.Context.Features.Get<IHttpBufferingFeature>();
@@ -105,9 +105,9 @@ namespace Microsoft.AspNetCore.SignalR.Transports
             transport.Context.Response.ContentType = "text/event-stream";
 
             // "data: initialized\n\n"
-            transport.Context.Response.Write(new ArraySegment<byte>(_dataInitialized));
+            await transport.Context.Response.Write(new ArraySegment<byte>(_dataInitialized));
 
-            return transport.Context.Response.Flush();
+            await transport.Context.Response.Flush();
         }
 
         private class SendContext
