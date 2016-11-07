@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR
             var bytes = Encoding.UTF8.GetBytes(data);
             response.ContentLength = bytes.Length;
             await response.Body.WriteAsync(bytes, 0, bytes.Length, response.HttpContext.RequestAborted);
-            await response.Body.FlushAsync();
+            await response.Body.FlushAsync(response.HttpContext.RequestAborted);
         }
     }
 }
